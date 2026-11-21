@@ -345,7 +345,75 @@
       opacity: 0.8;
     }
 
-    /* 模組四：三格鎖死工作檯 */
+    /* 模組四：每日固定例行檢核（跨日自動重置） */
+    .routine-badge {
+      font-size: 0.74rem;
+      color: var(--accent-sage-dark);
+      background-color: var(--accent-sage-light);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .routine-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .routine-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background-color: var(--bg-page);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+
+    .routine-item.done {
+      opacity: 0.62;
+    }
+
+    .routine-text {
+      flex: 1;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      word-break: break-word;
+      cursor: pointer;
+    }
+
+    .routine-item.done .routine-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .routine-edit-row {
+      display: none;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .routine-edit-row.open {
+      display: flex;
+    }
+
+    .btn-del-tiny {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+
+    .routine-managing .btn-del-tiny {
+      display: inline-block;
+    }
+
+    /* 模組五：三格鎖死工作檯 */
     .lock-banner {
       font-size: 0.8rem;
       color: var(--text-muted);
@@ -626,7 +694,25 @@
     </div>
   </section>
 
-  <!-- 模組四：三格鎖死工作檯 -->
+  <!-- 模組四：每日固定例行檢核（跨日自動重置，不佔三格額度） -->
+  <section class="card" id="module-routine">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span class="card-title">每日固定例行</span>
+        <span class="routine-badge" id="routine-progress">0/2</span>
+      </div>
+      <button type="button" class="btn-mini" id="btn-manage-routine">編輯項目</button>
+    </div>
+    <ul class="routine-list" id="routine-list">
+      <!-- 由 JS 動態渲染 -->
+    </ul>
+    <div class="routine-edit-row" id="routine-edit-row">
+      <input type="text" class="input-text" id="routine-input" placeholder="新增每日固定項目（例：核對托藥單）" maxlength="40">
+      <button type="button" class="btn-primary" id="btn-add-routine" style="padding: 8px 12px; font-size: 0.85rem;">新增</button>
+    </div>
+  </section>
+
+  <!-- 模組五：三格鎖死工作檯 -->
   <section class="card" id="module-workbench">
     <div class="card-header">
       <span class="card-title">今日三格工作檯（每次限 3 件微切片）</span>
@@ -703,15 +789,24 @@
         },
         {
           id: 2,
-          range: '11:00 – 15:00',
-          name: '【現場支援與午休黑洞】',
-          rule: '行政全面停機區。支援輪休＋吃飯放空。中午僅限 1 個 20 分鐘盤點群組受傷清單（分流標記，嚴禁中午看監視器）。',
+          range: '11:00 – 12:00',
+          name: '【彈性收尾與新生行政區】',
+          rule: '若無現場支援，僅限執行 2 格微切片（優先清中斷書籤、週一／三新生系統登錄或通知）。11:45 準時收手準備午休。',
           startMin: 11 * 60,
-          endMin: 15 * 60,
+          endMin: 12 * 60,
           isHoliday: false
         },
         {
           id: 3,
+          range: '12:00 – 15:00',
+          name: '【現場支援與午休黑洞】',
+          rule: '行政全面停機區。吃飯放空＋支援輪休。午休僅限 1 個 20 分鐘盤點群組受傷清單（分流標記，嚴禁中午看監視器）。',
+          startMin: 12 * 60,
+          endMin: 15 * 60,
+          isHoliday: false
+        },
+        {
+          id: 4,
           range: '15:00 – 16:20',
           name: '【受傷危機與監視器專線】',
           rule: '高風險溝通區：調監視器 ➔ 套模板擬稿傳老闆 ➔ 等待老闆回覆空窗期統一回非緊急家長訊息。',
@@ -720,7 +815,7 @@
           isHoliday: false
         },
         {
-          id: 4,
+          id: 5,
           range: '16:20 – 17:45',
           name: '【接送緩衝與下班封存】',
           rule: '17:00 後不開新檔案。17:35 打開下方倉庫，挑出明天前 3 順位推進工作檯，準時關機。',
@@ -729,7 +824,7 @@
           isHoliday: false
         },
         {
-          id: 5,
+          id: 6,
           range: '17:45 – 隔日 08:15',
           name: '【下班神經關機區】',
           rule: '已下班，切斷職場殘留訊號，禁止思考公事。',
@@ -738,7 +833,7 @@
           isHoliday: false
         },
         {
-          id: 6,
+          id: 7,
           range: '週末 / 國定假日',
           name: '【休假／非工作日模式】',
           rule: '今天是休假日，切斷職場與行政訊號。把時間留給身體恢復、生活與自己想做的事。',
@@ -755,7 +850,9 @@
         SLOTS: 'def_nav_slots_v1',
         WAREHOUSE: 'def_nav_warehouse_v1',
         BOOKMARK: 'def_nav_bookmark_v1',
-        LOCKED: 'def_nav_locked_v1'
+        LOCKED: 'def_nav_locked_v1',
+        ROUTINES: 'def_nav_routines_v1',
+        ROUTINE_DATE: 'def_nav_routine_date_v1'
       };
 
       const DEFAULT_SLOTS = [
@@ -763,6 +860,18 @@
         { text: '', done: false },
         { text: '', done: false }
       ];
+
+      const DEFAULT_ROUTINES = [
+        { text: '每日例行表單勾選', done: false },
+        { text: '親師溝通文件填寫', done: false }
+      ];
+
+      function formatLocalDate(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
 
       function loadJSON(key, fallback) {
         try {
@@ -792,17 +901,30 @@
       let bookmark = loadJSON(STORAGE_KEYS.BOOKMARK, null);
       let isLocked = loadJSON(STORAGE_KEYS.LOCKED, false);
 
+      // 每日例行清單：檢查是否跨日，跨日自動把所有 done 重置為 false
+      let routines = loadJSON(STORAGE_KEYS.ROUTINES, DEFAULT_ROUTINES);
+      if (!Array.isArray(routines)) {
+        routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+      }
+
+      function checkRoutineDailyReset() {
+        const todayStr = formatLocalDate(new Date());
+        const savedDate = localStorage.getItem(STORAGE_KEYS.ROUTINE_DATE);
+        if (savedDate !== todayStr) {
+          routines = routines.map(item => ({ text: item.text, done: false }));
+          saveJSON(STORAGE_KEYS.ROUTINES, routines);
+          localStorage.setItem(STORAGE_KEYS.ROUTINE_DATE, todayStr);
+          return true;
+        }
+        return false;
+      }
+
+      checkRoutineDailyReset();
+
       /* =========================================
          3. 模組一：動態時段導航燈（含週末與假日清單）
          ========================================= */
       let manualPreviewIndex = null; // null 表示自動模式
-
-      function formatLocalDate(dateObj) {
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      }
 
       function isHolidayOrWeekend(dateObj) {
         const day = dateObj.getDay(); // 0 = 週日, 6 = 週六
@@ -814,15 +936,15 @@
       function getCurrentPhaseIndex() {
         const now = new Date();
         if (isHolidayOrWeekend(now)) {
-          return 6; // 休假／非工作日模式
+          return 7; // 休假／非工作日模式
         }
         const mins = now.getHours() * 60 + now.getMinutes();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i <= 5; i++) {
           if (mins >= PHASES[i].startMin && mins < PHASES[i].endMin) {
             return i;
           }
         }
-        return 5; // 17:45 ~ 08:15
+        return 6; // 17:45 ~ 08:15
       }
 
       function renderPhase() {
@@ -833,7 +955,7 @@
         const dateStr = formatLocalDate(now);
 
         document.getElementById('phase-range').textContent =
-          idx === 6 ? `${dateStr}（${phase.range}）` : phase.range;
+          phase.isHoliday ? `${dateStr}（${phase.range}）` : phase.range;
         document.getElementById('phase-name').textContent = phase.name;
 
         const ruleEl = document.getElementById('phase-rule');
@@ -870,6 +992,9 @@
       setInterval(function () {
         if (manualPreviewIndex === null) {
           renderPhase();
+        }
+        if (checkRoutineDailyReset()) {
+          renderRoutines();
         }
       }, 30000);
 
@@ -1065,7 +1190,115 @@
       });
 
       /* =========================================
-         6. 模組四：三格鎖死工作檯 & 折疊倉庫
+         6. 模組四：每日固定例行檢核（跨日自動重置）
+         ========================================= */
+      let isManagingRoutines = false;
+
+      function renderRoutines() {
+        const listEl = document.getElementById('routine-list');
+        const progressEl = document.getElementById('routine-progress');
+        const moduleEl = document.getElementById('module-routine');
+
+        const doneCount = routines.filter(r => r.done).length;
+        progressEl.textContent = `${doneCount}/${routines.length}`;
+
+        if (isManagingRoutines) {
+          moduleEl.classList.add('routine-managing');
+        } else {
+          moduleEl.classList.remove('routine-managing');
+        }
+
+        listEl.innerHTML = '';
+        if (routines.length === 0) {
+          const emptyLi = document.createElement('li');
+          emptyLi.className = 'warehouse-empty';
+          emptyLi.textContent = '尚無每日固定項目，點右上角「編輯項目」可新增';
+          listEl.appendChild(emptyLi);
+          return;
+        }
+
+        routines.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'routine-item' + (item.done ? ' done' : '');
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'slot-checkbox';
+          checkbox.checked = item.done;
+          checkbox.addEventListener('change', function () {
+            routines[idx].done = this.checked;
+            saveJSON(STORAGE_KEYS.ROUTINES, routines);
+            renderRoutines();
+          });
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'routine-text';
+          textSpan.textContent = item.text;
+          textSpan.addEventListener('click', function () {
+            if (isManagingRoutines) {
+              const edited = prompt('修改每日例行項目名稱：', item.text);
+              if (edited !== null && edited.trim() !== '') {
+                routines[idx].text = edited.trim();
+                saveJSON(STORAGE_KEYS.ROUTINES, routines);
+                renderRoutines();
+              }
+            } else {
+              routines[idx].done = !routines[idx].done;
+              saveJSON(STORAGE_KEYS.ROUTINES, routines);
+              renderRoutines();
+            }
+          });
+
+          const btnDel = document.createElement('button');
+          btnDel.type = 'button';
+          btnDel.className = 'btn-del-tiny';
+          btnDel.textContent = '✕';
+          btnDel.title = '刪除此例行項目';
+          btnDel.addEventListener('click', function () {
+            routines.splice(idx, 1);
+            saveJSON(STORAGE_KEYS.ROUTINES, routines);
+            renderRoutines();
+          });
+
+          li.appendChild(checkbox);
+          li.appendChild(textSpan);
+          li.appendChild(btnDel);
+          listEl.appendChild(li);
+        });
+      }
+
+      document.getElementById('btn-manage-routine').addEventListener('click', function () {
+        isManagingRoutines = !isManagingRoutines;
+        const editRow = document.getElementById('routine-edit-row');
+        if (isManagingRoutines) {
+          editRow.classList.add('open');
+          this.textContent = '完成編輯';
+        } else {
+          editRow.classList.remove('open');
+          this.textContent = '編輯項目';
+        }
+        renderRoutines();
+      });
+
+      function addRoutineItem() {
+        const inputEl = document.getElementById('routine-input');
+        const val = inputEl.value.trim();
+        if (!val) return;
+        routines.push({ text: val, done: false });
+        saveJSON(STORAGE_KEYS.ROUTINES, routines);
+        inputEl.value = '';
+        renderRoutines();
+      }
+
+      document.getElementById('btn-add-routine').addEventListener('click', addRoutineItem);
+      document.getElementById('routine-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          addRoutineItem();
+        }
+      });
+
+      /* =========================================
+         7. 模組五：三格鎖死工作檯 & 折疊倉庫
          ========================================= */
       function evaluateLockState() {
         const filledSlots = slots.filter(s => s.text.trim() !== '');
@@ -1173,7 +1406,7 @@
       });
 
       /* =========================================
-         7. 後台：折疊式待辦倉庫
+         8. 後台：折疊式待辦倉庫
          ========================================= */
       const warehousePanel = document.getElementById('warehouse-panel');
       const btnToggleWarehouse = document.getElementById('btn-toggle-warehouse');
@@ -1274,11 +1507,12 @@
       });
 
       /* =========================================
-         8. 初始化渲染
+         9. 初始化渲染
          ========================================= */
       renderPhase();
       updateTimerUI();
       renderBookmark();
+      renderRoutines();
       renderWorkbench();
       renderWarehouse();
     })();
