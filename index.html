@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="20m 導航儀">
+  <meta name="theme-color" content="#F7F6F2">
+  <title>20 分鐘防禦性工作導航儀</title>
+  <style>
+    :root {
+      --bg-page: #F7F6F2;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #EFECE6;
+      --text-main: #333333;
+      --text-muted: #6E6A63;
+      --accent-sage: #7A9A82;
+      --accent-sage-dark: #63826B;
+      --accent-sage-light: #EBF1EC;
+      --accent-warm: #8C857B;
+      --accent-bookmark: #F4EFE6;
+      --border-bookmark: #C8B9A6;
+      --border-light: #E5E2DC;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-card: 0 2px 8px rgba(51, 51, 51, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans TC", sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 14px 14px 48px 14px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* 通用卡片樣式 */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-light);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-warm);
+      letter-spacing: 0.03em;
+    }
+
+    /* 置頂中斷書籤釘選區 */
+    #pinned-bookmark-container {
+      display: none;
+      background-color: var(--accent-bookmark);
+      border: 1.5px solid var(--border-bookmark);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    #pinned-bookmark-container.active {
+      display: block;
+    }
+
+    .bookmark-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .bookmark-tag {
+      display: inline-block;
+      background-color: var(--accent-warm);
+      color: #FFFFFF;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .bookmark-time {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .bookmark-note {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .btn-clear-bookmark {
+      width: 100%;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-bookmark);
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-clear-bookmark:active {
+      background-color: var(--bg-subtle);
+    }
+
+    /* 模組一：動態時段導航燈 */
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .phase-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .phase-time-range {
+      font-size: 0.78rem;
+      color: var(--accent-sage-dark);
+      font-weight: 600;
+    }
+
+    .phase-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .phase-actions {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .btn-mini {
+      background: var(--bg-subtle);
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 5px 9px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-mini:active {
+      opacity: 0.75;
+    }
+
+    .phase-rule {
+      font-size: 0.9rem;
+      color: var(--text-main);
+      background: var(--bg-page);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--accent-sage);
+    }
+
+    .phase-rule.holiday-style {
+      background: var(--accent-sage-light);
+      border-left-color: var(--accent-sage-dark);
+    }
+
+    .preview-notice {
+      display: none;
+      font-size: 0.75rem;
+      color: var(--accent-warm);
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    /* 模組二：20 分鐘極簡計時器 */
+    .timer-display-wrap {
+      text-align: center;
+      padding: 6px 0 12px 0;
+    }
+
+    .timer-mode-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .timer-digits {
+      font-size: 3.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .timer-alert-box {
+      display: none;
+      background-color: var(--accent-sage-light);
+      color: var(--accent-sage-dark);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+      border: 1px solid var(--accent-sage);
+    }
+
+    .timer-alert-box.show {
+      display: block;
+    }
+
+    .timer-controls {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-sage);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary:active {
+      background-color: var(--accent-sage-dark);
+    }
+
+    .btn-primary.running {
+      background-color: var(--accent-warm);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-subtle);
+      color: var(--text-main);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 10px 8px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-secondary:active {
+      opacity: 0.75;
+    }
+
+    /* 模組三：一鍵中斷書籤 */
+    .tag-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag-chip {
+      background-color: var(--bg-page);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .tag-chip.selected {
+      background-color: var(--accent-warm);
+      color: #FFFFFF;
+      border-color: var(--accent-warm);
+      font-weight: 600;
+    }
+
+    .interrupt-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-text {
+      flex: 1;
+      background-color: var(--bg-page);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .input-text:focus {
+      border-color: var(--accent-sage);
+      background-color: #FFFFFF;
+    }
+
+    .btn-pin {
+      background-color: var(--accent-warm);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-pin:active {
+      opacity: 0.8;
+    }
+
+    /* 模組四：三格鎖死工作檯 */
+    .lock-banner {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background-color: var(--bg-page);
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lock-banner.unlocked {
+      background-color: var(--accent-sage-light);
+      color: var(--accent-sage-dark);
+      font-weight: 500;
+    }
+
+    .slot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slot-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background-color: #FFFFFF;
+      min-height: 46px;
+    }
+
+    .slot-item.empty {
+      background-color: var(--bg-page);
+      border-style: dashed;
+    }
+
+    .slot-item.completed {
+      background-color: var(--bg-page);
+      opacity: 0.68;
+    }
+
+    .slot-checkbox {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent-sage);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .slot-label-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-warm);
+      background: var(--bg-subtle);
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .slot-text {
+      flex: 1;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .slot-item.completed .slot-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .slot-empty-hint {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .slot-direct-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .btn-reset-round {
+      display: none;
+      width: 100%;
+      margin-top: 12px;
+      background-color: var(--accent-sage);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 11px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-reset-round.visible {
+      display: block;
+    }
+
+    /* 後台：折疊式待辦倉庫 */
+    .warehouse-toggle-wrap {
+      margin-top: 6px;
+    }
+
+    .btn-toggle-warehouse {
+      width: 100%;
+      background-color: transparent;
+      border: 1px dashed var(--border-bookmark);
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .warehouse-panel {
+      display: none;
+      margin-top: 10px;
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      border: 1px solid var(--border-light);
+    }
+
+    .warehouse-panel.open {
+      display: block;
+    }
+
+    .warehouse-add-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .warehouse-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .warehouse-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 10px;
+      background-color: var(--bg-page);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+
+    .warehouse-item-text {
+      flex: 1;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      word-break: break-word;
+      cursor: pointer;
+    }
+
+    .warehouse-actions {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .btn-push {
+      background-color: var(--accent-sage);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-push:disabled {
+      background-color: #D5D2CC;
+      color: #88857E;
+      cursor: not-allowed;
+    }
+
+    .btn-del {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 5px 7px;
+      font-size: 0.76rem;
+      cursor: pointer;
+    }
+
+    .warehouse-empty {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding: 12px 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 置頂：中斷書籤釘選區 -->
+  <section id="pinned-bookmark-container" aria-live="polite">
+    <div class="bookmark-badge-row">
+      <span class="bookmark-tag" id="pinned-tag">看監視器</span>
+      <span class="bookmark-time" id="pinned-time">中斷於 09:42</span>
+    </div>
+    <div class="bookmark-note" id="pinned-note">建檔到王小明</div>
+    <button type="button" class="btn-clear-bookmark" id="btn-clear-bookmark">✓ 已接續，清除書籤</button>
+  </section>
+
+  <!-- 模組一：動態時段導航燈 -->
+  <section class="card" id="module-phase">
+    <div class="phase-header">
+      <div class="phase-title-group">
+        <span class="phase-time-range" id="phase-range">09:00 – 11:00</span>
+        <h1 class="phase-name" id="phase-name">【黃金深度行政區】</h1>
+      </div>
+      <div class="phase-actions">
+        <button type="button" class="btn-mini" id="btn-reset-auto" style="display: none;">回自動</button>
+        <button type="button" class="btn-mini" id="btn-cycle-phase">預覽其他時段</button>
+      </div>
+    </div>
+    <p class="phase-rule" id="phase-rule">
+      全天唯一連續窗口。專注執行下方 3 格微切片（每格 20 分鐘，一格只做一份資料），被打斷請立刻使用中斷書籤。
+    </p>
+    <div class="preview-notice" id="preview-notice">目前為手動預覽模式</div>
+  </section>
+
+  <!-- 模組二：20 分鐘極簡計時器 -->
+  <section class="card" id="module-timer">
+    <div class="card-header">
+      <span class="card-title">防禦計時器 CIRCUIT BREAKER</span>
+      <span class="timer-mode-label" id="timer-mode-label">深度微切片模式 (20m)</span>
+    </div>
+    <div class="timer-display-wrap">
+      <div class="timer-digits" id="timer-display">20:00</div>
+    </div>
+    <div class="timer-alert-box" id="timer-alert-box">
+      20 分鐘到！站起來喝口水、放鬆咬肌
+    </div>
+    <div class="timer-controls">
+      <button type="button" class="btn-primary" id="btn-timer-toggle">開始</button>
+      <button type="button" class="btn-secondary" id="btn-timer-reset">重置 20:00</button>
+      <button type="button" class="btn-secondary" id="btn-timer-break">5 分鐘喘息</button>
+    </div>
+  </section>
+
+  <!-- 模組三：一鍵中斷書籤 -->
+  <section class="card" id="module-interrupt">
+    <div class="card-header">
+      <span class="card-title">一鍵中斷書籤 INTERRUPT BOOKMARK</span>
+    </div>
+    <div class="tag-group" id="tag-group">
+      <button type="button" class="tag-chip selected" data-tag="看監視器">看監視器</button>
+      <button type="button" class="tag-chip" data-tag="老闆交辦">老闆交辦</button>
+      <button type="button" class="tag-chip" data-tag="現場支援">現場支援</button>
+    </div>
+    <div class="interrupt-input-row">
+      <input type="text" class="input-text" id="interrupt-input" placeholder="目前做到哪？（例：建檔到王小明）" maxlength="40">
+      <button type="button" class="btn-pin" id="btn-pin-bookmark">暫停並釘選</button>
+    </div>
+  </section>
+
+  <!-- 模組四：三格鎖死工作檯 -->
+  <section class="card" id="module-workbench">
+    <div class="card-header">
+      <span class="card-title">今日三格工作檯（每次限 3 件微切片）</span>
+    </div>
+    <div class="lock-banner" id="lock-banner">
+      先清空眼前這 3 件微切片，再補下一批
+    </div>
+    <div class="slot-list" id="slot-list">
+      <!-- 由 JS 動態渲染 3 格 -->
+    </div>
+    <button type="button" class="btn-reset-round" id="btn-reset-round">
+      清空本輪並開放補貨
+    </button>
+  </section>
+
+  <!-- 後台：折疊式待辦倉庫 -->
+  <section class="warehouse-toggle-wrap">
+    <button type="button" class="btn-toggle-warehouse" id="btn-toggle-warehouse">
+      展開待辦倉庫（平日執行時請保持關閉）
+    </button>
+
+    <div class="warehouse-panel" id="warehouse-panel">
+      <div class="card-header">
+        <span class="card-title">待辦倉庫（新生／轉學／畢業／雜事）</span>
+      </div>
+      <div class="warehouse-add-row">
+        <input type="text" class="input-text" id="warehouse-input" placeholder="新增待辦微切片（例：整理新生 A 資料）" maxlength="50">
+        <button type="button" class="btn-primary" id="btn-add-warehouse" style="padding: 9px 14px;">加入</button>
+      </div>
+      <ul class="warehouse-list" id="warehouse-list">
+        <!-- 由 JS 動態渲染倉庫清單 -->
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =========================================
+         1. 自訂假日清單 & 時段資料定義
+         格式：'YYYY-MM-DD'（可依每年行事曆自行增刪）
+         ========================================= */
+      const HOLIDAYS = [
+        '2027-01-01', // 元旦
+        '2027-02-05', // 小年夜前一日/彈性休假範例
+        '2027-02-08', // 農曆春節連假範例
+        '2027-02-09',
+        '2027-02-10',
+        '2027-02-11',
+        '2027-02-12',
+        '2027-03-01', // 228 補假範例
+        '2027-04-05'  // 兒童節/清明節範例
+      ];
+
+      const PHASES = [
+        {
+          id: 0,
+          range: '08:15 – 09:00',
+          name: '【啟動與物理緩衝區】',
+          rule: '純物理動作：檢查今日托藥內容、確認班級公務機已設好 15 分鐘咬人提醒鬧鐘（刪除自己身上的鬧鐘）。不開深度行政。',
+          startMin: 8 * 60 + 15,
+          endMin: 9 * 60,
+          isHoliday: false
+        },
+        {
+          id: 1,
+          range: '09:00 – 11:00',
+          name: '【黃金深度行政區】',
+          rule: '全天唯一連續窗口。專注執行下方 3 格微切片（每格 20 分鐘，一格只做一份資料），被打斷請立刻使用中斷書籤。',
+          startMin: 9 * 60,
+          endMin: 11 * 60,
+          isHoliday: false
+        },
+        {
+          id: 2,
+          range: '11:00 – 15:00',
+          name: '【現場支援與午休黑洞】',
+          rule: '行政全面停機區。支援輪休＋吃飯放空。中午僅限 1 個 20 分鐘盤點群組受傷清單（分流標記，嚴禁中午看監視器）。',
+          startMin: 11 * 60,
+          endMin: 15 * 60,
+          isHoliday: false
+        },
+        {
+          id: 3,
+          range: '15:00 – 16:20',
+          name: '【受傷危機與監視器專線】',
+          rule: '高風險溝通區：調監視器 ➔ 套模板擬稿傳老闆 ➔ 等待老闆回覆空窗期統一回非緊急家長訊息。',
+          startMin: 15 * 60,
+          endMin: 16 * 60 + 20,
+          isHoliday: false
+        },
+        {
+          id: 4,
+          range: '16:20 – 17:45',
+          name: '【接送緩衝與下班封存】',
+          rule: '17:00 後不開新檔案。17:35 打開下方倉庫，挑出明天前 3 順位推進工作檯，準時關機。',
+          startMin: 16 * 60 + 20,
+          endMin: 17 * 60 + 45,
+          isHoliday: false
+        },
+        {
+          id: 5,
+          range: '17:45 – 隔日 08:15',
+          name: '【下班神經關機區】',
+          rule: '已下班，切斷職場殘留訊號，禁止思考公事。',
+          startMin: -1,
+          endMin: -1,
+          isHoliday: false
+        },
+        {
+          id: 6,
+          range: '週末 / 國定假日',
+          name: '【休假／非工作日模式】',
+          rule: '今天是休假日，切斷職場與行政訊號。把時間留給身體恢復、生活與自己想做的事。',
+          startMin: -1,
+          endMin: -1,
+          isHoliday: true
+        }
+      ];
+
+      /* =========================================
+         2. LocalStorage 狀態管理
+         ========================================= */
+      const STORAGE_KEYS = {
+        SLOTS: 'def_nav_slots_v1',
+        WAREHOUSE: 'def_nav_warehouse_v1',
+        BOOKMARK: 'def_nav_bookmark_v1',
+        LOCKED: 'def_nav_locked_v1'
+      };
+
+      const DEFAULT_SLOTS = [
+        { text: '', done: false },
+        { text: '', done: false },
+        { text: '', done: false }
+      ];
+
+      function loadJSON(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function saveJSON(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.warn('LocalStorage 寫入失敗', e);
+        }
+      }
+
+      let slots = loadJSON(STORAGE_KEYS.SLOTS, DEFAULT_SLOTS);
+      if (!Array.isArray(slots) || slots.length !== 3) {
+        slots = JSON.parse(JSON.stringify(DEFAULT_SLOTS));
+      }
+
+      let warehouse = loadJSON(STORAGE_KEYS.WAREHOUSE, []);
+      if (!Array.isArray(warehouse)) warehouse = [];
+
+      let bookmark = loadJSON(STORAGE_KEYS.BOOKMARK, null);
+      let isLocked = loadJSON(STORAGE_KEYS.LOCKED, false);
+
+      /* =========================================
+         3. 模組一：動態時段導航燈（含週末與假日清單）
+         ========================================= */
+      let manualPreviewIndex = null; // null 表示自動模式
+
+      function formatLocalDate(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function isHolidayOrWeekend(dateObj) {
+        const day = dateObj.getDay(); // 0 = 週日, 6 = 週六
+        if (day === 0 || day === 6) return true;
+        const isoDate = formatLocalDate(dateObj);
+        return HOLIDAYS.includes(isoDate);
+      }
+
+      function getCurrentPhaseIndex() {
+        const now = new Date();
+        if (isHolidayOrWeekend(now)) {
+          return 6; // 休假／非工作日模式
+        }
+        const mins = now.getHours() * 60 + now.getMinutes();
+        for (let i = 0; i < 5; i++) {
+          if (mins >= PHASES[i].startMin && mins < PHASES[i].endMin) {
+            return i;
+          }
+        }
+        return 5; // 17:45 ~ 08:15
+      }
+
+      function renderPhase() {
+        const autoIdx = getCurrentPhaseIndex();
+        const idx = manualPreviewIndex !== null ? manualPreviewIndex : autoIdx;
+        const phase = PHASES[idx];
+        const now = new Date();
+        const dateStr = formatLocalDate(now);
+
+        document.getElementById('phase-range').textContent =
+          idx === 6 ? `${dateStr}（${phase.range}）` : phase.range;
+        document.getElementById('phase-name').textContent = phase.name;
+
+        const ruleEl = document.getElementById('phase-rule');
+        ruleEl.textContent = phase.rule;
+        if (phase.isHoliday) {
+          ruleEl.classList.add('holiday-style');
+        } else {
+          ruleEl.classList.remove('holiday-style');
+        }
+
+        const previewNotice = document.getElementById('preview-notice');
+        const btnResetAuto = document.getElementById('btn-reset-auto');
+        if (manualPreviewIndex !== null) {
+          previewNotice.style.display = 'block';
+          btnResetAuto.style.display = 'inline-block';
+        } else {
+          previewNotice.style.display = 'none';
+          btnResetAuto.style.display = 'none';
+        }
+      }
+
+      document.getElementById('btn-cycle-phase').addEventListener('click', function () {
+        const base = manualPreviewIndex !== null ? manualPreviewIndex : getCurrentPhaseIndex();
+        manualPreviewIndex = (base + 1) % PHASES.length;
+        renderPhase();
+      });
+
+      document.getElementById('btn-reset-auto').addEventListener('click', function () {
+        manualPreviewIndex = null;
+        renderPhase();
+      });
+
+      // 每 30 秒檢查一次系統時間是否跨時段或跨日
+      setInterval(function () {
+        if (manualPreviewIndex === null) {
+          renderPhase();
+        }
+      }, 30000);
+
+      /* =========================================
+         4. 模組二：20 分鐘極簡計時器 + Web Audio
+         ========================================= */
+      const WORK_SECONDS = 20 * 60;
+      const BREAK_SECONDS = 5 * 60;
+
+      let remainingSeconds = WORK_SECONDS;
+      let timerMode = 'work'; // 'work' | 'break'
+      let timerInterval = null;
+      let isRunning = false;
+      let endTimestamp = null;
+      let audioCtx = null;
+
+      function unlockAudio() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            audioCtx = new AudioContext();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+
+      function playGentleChime() {
+        try {
+          unlockAudio();
+          if (!audioCtx) return;
+
+          const now = audioCtx.currentTime;
+          const freqs = [523.25, 659.25];
+          freqs.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.35);
+
+            gain.gain.setValueAtTime(0.001, now + i * 0.35);
+            gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.35 + 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.35 + 1.4);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now + i * 0.35);
+            osc.stop(now + i * 0.35 + 1.45);
+          });
+        } catch (e) {
+          console.warn('音效播放受限', e);
+        }
+      }
+
+      function formatTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+
+      function updateTimerUI() {
+        document.getElementById('timer-display').textContent = formatTime(remainingSeconds);
+        const btnToggle = document.getElementById('btn-timer-toggle');
+        const modeLabel = document.getElementById('timer-mode-label');
+
+        if (isRunning) {
+          btnToggle.textContent = '暫停';
+          btnToggle.classList.add('running');
+        } else {
+          btnToggle.textContent = '開始';
+          btnToggle.classList.remove('running');
+        }
+
+        modeLabel.textContent = timerMode === 'work'
+          ? '深度微切片模式 (20m)'
+          : '喘息喝水模式 (5m)';
+      }
+
+      function pauseTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        isRunning = false;
+        endTimestamp = null;
+        updateTimerUI();
+      }
+
+      function startTimer() {
+        if (isRunning) return;
+        unlockAudio();
+        document.getElementById('timer-alert-box').classList.remove('show');
+
+        if (remainingSeconds <= 0) {
+          remainingSeconds = timerMode === 'work' ? WORK_SECONDS : BREAK_SECONDS;
+        }
+
+        isRunning = true;
+        endTimestamp = Date.now() + remainingSeconds * 1000;
+        updateTimerUI();
+
+        timerInterval = setInterval(function () {
+          const diff = Math.round((endTimestamp - Date.now()) / 1000);
+          if (diff <= 0) {
+            remainingSeconds = 0;
+            pauseTimer();
+            const alertBox = document.getElementById('timer-alert-box');
+            alertBox.textContent = timerMode === 'work'
+              ? '20 分鐘到！站起來喝口水、放鬆咬肌'
+              : '5 分鐘喘息結束！準備好再按開始';
+            alertBox.classList.add('show');
+            playGentleChime();
+          } else {
+            remainingSeconds = diff;
+            updateTimerUI();
+          }
+        }, 250);
+      }
+
+      document.getElementById('btn-timer-toggle').addEventListener('click', function () {
+        if (isRunning) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      });
+
+      document.getElementById('btn-timer-reset').addEventListener('click', function () {
+        pauseTimer();
+        timerMode = 'work';
+        remainingSeconds = WORK_SECONDS;
+        document.getElementById('timer-alert-box').classList.remove('show');
+        updateTimerUI();
+      });
+
+      document.getElementById('btn-timer-break').addEventListener('click', function () {
+        pauseTimer();
+        timerMode = 'break';
+        remainingSeconds = BREAK_SECONDS;
+        document.getElementById('timer-alert-box').classList.remove('show');
+        startTimer();
+      });
+
+      /* =========================================
+         5. 模組三：一鍵中斷書籤
+         ========================================= */
+      let selectedTag = '看監視器';
+
+      document.getElementById('tag-group').addEventListener('click', function (e) {
+        if (e.target.classList.contains('tag-chip')) {
+          document.querySelectorAll('.tag-chip').forEach(btn => btn.classList.remove('selected'));
+          e.target.classList.add('selected');
+          selectedTag = e.target.getAttribute('data-tag');
+        }
+      });
+
+      function renderBookmark() {
+        const container = document.getElementById('pinned-bookmark-container');
+        if (bookmark) {
+          document.getElementById('pinned-tag').textContent = bookmark.tag;
+          document.getElementById('pinned-time').textContent = '中斷於 ' + bookmark.time;
+          document.getElementById('pinned-note').textContent = bookmark.note || '（未填寫進度備註）';
+          container.classList.add('active');
+        } else {
+          container.classList.remove('active');
+        }
+      }
+
+      document.getElementById('btn-pin-bookmark').addEventListener('click', function () {
+        pauseTimer();
+        const inputEl = document.getElementById('interrupt-input');
+        const noteText = inputEl.value.trim();
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        bookmark = {
+          tag: selectedTag,
+          note: noteText || '突發事件中斷',
+          time: timeStr
+        };
+        saveJSON(STORAGE_KEYS.BOOKMARK, bookmark);
+        inputEl.value = '';
+        renderBookmark();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      document.getElementById('btn-clear-bookmark').addEventListener('click', function () {
+        bookmark = null;
+        saveJSON(STORAGE_KEYS.BOOKMARK, null);
+        renderBookmark();
+      });
+
+      /* =========================================
+         6. 模組四：三格鎖死工作檯 & 折疊倉庫
+         ========================================= */
+      function evaluateLockState() {
+        const filledSlots = slots.filter(s => s.text.trim() !== '');
+        if (filledSlots.length === 0) {
+          isLocked = false;
+        } else {
+          const hasUnfinished = filledSlots.some(s => !s.done);
+          if (hasUnfinished) {
+            isLocked = true;
+          }
+        }
+        saveJSON(STORAGE_KEYS.LOCKED, isLocked);
+      }
+
+      function renderWorkbench() {
+        evaluateLockState();
+        const slotListEl = document.getElementById('slot-list');
+        const lockBannerEl = document.getElementById('lock-banner');
+        const btnResetRound = document.getElementById('btn-reset-round');
+
+        const filledSlots = slots.filter(s => s.text.trim() !== '');
+        const allFilledDone = filledSlots.length > 0 && filledSlots.every(s => s.done);
+
+        if (filledSlots.length === 0) {
+          lockBannerEl.textContent = '目前工作檯已清空，可從下方倉庫補入最多 3 件微切片';
+          lockBannerEl.classList.add('unlocked');
+        } else if (allFilledDone) {
+          lockBannerEl.textContent = '本輪微切片已全數完成！請點擊下方按鈕清空並解鎖補貨';
+          lockBannerEl.classList.add('unlocked');
+        } else {
+          lockBannerEl.textContent = '先清空眼前這 3 件微切片，再補下一批';
+          lockBannerEl.classList.remove('unlocked');
+        }
+
+        if (allFilledDone) {
+          btnResetRound.classList.add('visible');
+        } else {
+          btnResetRound.classList.remove('visible');
+        }
+
+        slotListEl.innerHTML = '';
+        slots.forEach((slot, index) => {
+          const div = document.createElement('div');
+          const isEmpty = slot.text.trim() === '';
+          div.className = 'slot-item' + (isEmpty ? ' empty' : '') + (slot.done ? ' completed' : '');
+
+          const badge = document.createElement('span');
+          badge.className = 'slot-label-num';
+          badge.textContent = 'S' + (index + 1);
+          div.appendChild(badge);
+
+          if (isEmpty) {
+            if (!isLocked) {
+              const directInput = document.createElement('input');
+              directInput.type = 'text';
+              directInput.className = 'slot-direct-input';
+              directInput.placeholder = '空位（從倉庫推入或直接輸入按 Enter）';
+              directInput.maxLength = 50;
+              directInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                  slots[index] = { text: this.value.trim(), done: false };
+                  saveJSON(STORAGE_KEYS.SLOTS, slots);
+                  renderWorkbench();
+                  renderWarehouse();
+                }
+              });
+              div.appendChild(directInput);
+            } else {
+              const emptySpan = document.createElement('span');
+              emptySpan.className = 'slot-empty-hint';
+              emptySpan.textContent = '（本輪保留空位，請先完成上方任務）';
+              div.appendChild(emptySpan);
+            }
+          } else {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'slot-checkbox';
+            checkbox.checked = slot.done;
+            checkbox.addEventListener('change', function () {
+              slots[index].done = this.checked;
+              saveJSON(STORAGE_KEYS.SLOTS, slots);
+              renderWorkbench();
+              renderWarehouse();
+            });
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'slot-text';
+            textSpan.textContent = slot.text;
+
+            div.appendChild(checkbox);
+            div.appendChild(textSpan);
+          }
+
+          slotListEl.appendChild(div);
+        });
+      }
+
+      document.getElementById('btn-reset-round').addEventListener('click', function () {
+        slots = JSON.parse(JSON.stringify(DEFAULT_SLOTS));
+        isLocked = false;
+        saveJSON(STORAGE_KEYS.SLOTS, slots);
+        saveJSON(STORAGE_KEYS.LOCKED, isLocked);
+        renderWorkbench();
+        renderWarehouse();
+      });
+
+      /* =========================================
+         7. 後台：折疊式待辦倉庫
+         ========================================= */
+      const warehousePanel = document.getElementById('warehouse-panel');
+      const btnToggleWarehouse = document.getElementById('btn-toggle-warehouse');
+
+      btnToggleWarehouse.addEventListener('click', function () {
+        const isOpen = warehousePanel.classList.toggle('open');
+        btnToggleWarehouse.textContent = isOpen
+          ? '收合待辦倉庫（執行任務時請保持關閉）'
+          : '展開待辦倉庫（平日執行時請保持關閉）';
+      });
+
+      function renderWarehouse() {
+        const listEl = document.getElementById('warehouse-list');
+        listEl.innerHTML = '';
+
+        if (warehouse.length === 0) {
+          const emptyLi = document.createElement('li');
+          emptyLi.className = 'warehouse-empty';
+          emptyLi.textContent = '倉庫目前沒有待辦項目';
+          listEl.appendChild(emptyLi);
+          return;
+        }
+
+        const hasEmptySlot = slots.some(s => s.text.trim() === '');
+        const canPush = !isLocked && hasEmptySlot;
+
+        warehouse.forEach((itemText, idx) => {
+          const li = document.createElement('li');
+          li.className = 'warehouse-item';
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'warehouse-item-text';
+          textSpan.textContent = itemText;
+          textSpan.title = '點擊可編輯文字';
+          textSpan.addEventListener('click', function () {
+            const edited = prompt('編輯待辦內容：', itemText);
+            if (edited !== null && edited.trim() !== '') {
+              warehouse[idx] = edited.trim();
+              saveJSON(STORAGE_KEYS.WAREHOUSE, warehouse);
+              renderWarehouse();
+            }
+          });
+
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'warehouse-actions';
+
+          const btnPush = document.createElement('button');
+          btnPush.type = 'button';
+          btnPush.className = 'btn-push';
+          btnPush.textContent = '推入工作檯';
+          btnPush.disabled = !canPush;
+          btnPush.addEventListener('click', function () {
+            const emptyIdx = slots.findIndex(s => s.text.trim() === '');
+            if (emptyIdx !== -1 && !isLocked) {
+              slots[emptyIdx] = { text: itemText, done: false };
+              warehouse.splice(idx, 1);
+              saveJSON(STORAGE_KEYS.SLOTS, slots);
+              saveJSON(STORAGE_KEYS.WAREHOUSE, warehouse);
+              renderWorkbench();
+              renderWarehouse();
+            }
+          });
+
+          const btnDel = document.createElement('button');
+          btnDel.type = 'button';
+          btnDel.className = 'btn-del';
+          btnDel.textContent = '刪除';
+          btnDel.addEventListener('click', function () {
+            warehouse.splice(idx, 1);
+            saveJSON(STORAGE_KEYS.WAREHOUSE, warehouse);
+            renderWarehouse();
+          });
+
+          actionsDiv.appendChild(btnPush);
+          actionsDiv.appendChild(btnDel);
+
+          li.appendChild(textSpan);
+          li.appendChild(actionsDiv);
+          listEl.appendChild(li);
+        });
+      }
+
+      function addWarehouseItem() {
+        const inputEl = document.getElementById('warehouse-input');
+        const val = inputEl.value.trim();
+        if (!val) return;
+        warehouse.push(val);
+        saveJSON(STORAGE_KEYS.WAREHOUSE, warehouse);
+        inputEl.value = '';
+        renderWarehouse();
+      }
+
+      document.getElementById('btn-add-warehouse').addEventListener('click', addWarehouseItem);
+      document.getElementById('warehouse-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          addWarehouseItem();
+        }
+      });
+
+      /* =========================================
+         8. 初始化渲染
+         ========================================= */
+      renderPhase();
+      updateTimerUI();
+      renderBookmark();
+      renderWorkbench();
+      renderWarehouse();
+    })();
+  </script>
+</body>
+</html>
